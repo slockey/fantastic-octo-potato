@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 
@@ -13,7 +15,11 @@ public class SpringSecurityConfiguration {
 
     @Bean
     public UserDetailsManager getUserDetailsManager() {
-        UserDetails userDetails = User.withUsername("user").password("pass").roles("USER").build();
+        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        UserDetails userDetails = User.withUsername("user")
+                .password(encoder.encode("pass"))
+                .roles("USER")
+                .build();
         return new InMemoryUserDetailsManager(userDetails);
     }
 
