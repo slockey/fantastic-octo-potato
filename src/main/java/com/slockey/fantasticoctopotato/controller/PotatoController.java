@@ -24,12 +24,12 @@ public class PotatoController {
         this.potatoRepository = potatoRepository;
     }
 
-    @GetMapping("/potato")
+    @GetMapping(value = "/potato", produces = MediaType.APPLICATION_JSON_VALUE)
     public Potato getNextPotato() {
         return this.potatoRepository.getPotato();
     }
 
-    @GetMapping(value = "/potatoStream", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/potatoStream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Potato> getStreamedPotato() {
         return Flux.interval(Duration.ofMillis(200))
                 .map(tick -> this.potatoRepository.getPotato());
@@ -39,19 +39,9 @@ public class PotatoController {
     public ResponseEntity<StreamingResponseBody> getOtherPotatoStream() {
         StreamingResponseBody responseBody = response -> {
             while(Thread.currentThread().isAlive()) {
-                try {
                     String msg = this.potatoRepository.getPotato().toString() + "\n";
                     response.write(msg.getBytes(StandardCharsets.UTF_8));
                     response.flush();
-                    // just a little backoff
-                    Thread.currentThread().sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    System.out.println("Thread interrupted...");
-                    if (Thread.currentThread().isInterrupted()) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
             }
         };
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseBody);
