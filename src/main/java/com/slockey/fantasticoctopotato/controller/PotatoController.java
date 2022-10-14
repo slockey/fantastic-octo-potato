@@ -38,15 +38,19 @@ public class PotatoController {
     @GetMapping("/otherPotatoStream")
     public ResponseEntity<StreamingResponseBody> getOtherPotatoStream() {
         StreamingResponseBody responseBody = response -> {
-            while(true) {
+            while(Thread.currentThread().isAlive()) {
                 try {
                     String msg = this.potatoRepository.getPotato().toString() + "\n";
                     response.write(msg.getBytes(StandardCharsets.UTF_8));
                     response.flush();
                     // just a little backoff
-                    Thread.sleep(200);
+                    Thread.currentThread().sleep(200);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    System.out.println("Thread interrupted...");
+                    if (Thread.currentThread().isInterrupted()) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         };
